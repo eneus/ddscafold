@@ -1,4 +1,4 @@
-# Afishi based on Drupal 9
+# DDScafold based on Drupal 9
 
 Innovation Technology Projects Management based on Drupal (backend) and ReactJS (frontkend).
 
@@ -39,7 +39,7 @@ More detailes [here](https://www.drupal.org/docs/system-requirements/php-require
 Install drupal 9 core and dependencies:
 
 ```
-$ git clone git@gitlab.com:eneus/afishi.git
+$ git clone git@github.com:eneus/ddscafold.git
 $ cd /[PATH]/[TO]/backend/
 $ composer install
 ```
@@ -56,7 +56,7 @@ Drupal project installation using `cmd`:
 drush site:install --existing-config --config-dir='../config/sync' --db-url='mysql://[db_user]:[db_pass]@localhost/[db_name]' --account-name=admin --account-pass=admin
 ```
 
-`--existing-config` - "Afishi" configurations Project 
+`--existing-config` - "DDScafold" configurations Project 
 
 `--config-dir='../config/sync'` - sync configuration folder flag
 
@@ -64,9 +64,9 @@ drush site:install --existing-config --config-dir='../config/sync' --db-url='mys
 
 `--account-name=admin --account-pass=admin` - WEB UI User/Password.
 
-drush site:install --existing-config --config-dir='../config/sync' --db-url='mysql://afishi:afishi@mysql/afishi' --account-name=admin --account-pass=admin
+drush site:install --existing-config --config-dir='../config/sync' --db-url='mysql://ddscafold:ddscafold@mysql/ddscafold' --account-name=admin --account-pass=admin
 
 ### Create backup by `mysqldump`:
 ```mysql
-mysqldump -uroot -pafishi -hmysql afishi_old > ./backups/afishi_old.sql
+mysqldump -uroot -pddscafold -hmysql ddscafold > ./backups/ddscafold.sql
 ```

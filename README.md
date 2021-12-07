@@ -1,5 +1,5 @@
-# Afishi
+# DDScafold
 
-Sergo Afishi.ru
+DDScafold
 
-drush site:install --existing-config --config-dir='../config/sync' --db-url='mysql://afishi:afishi@mysql/afishi' --account-name=admin --account-pass=admin
+drush site:install --existing-config --config-dir='../config/sync' --db-url='mysql://ddscafold:ddscafold@mysql/ddscafold' --account-name=admin --account-pass=admin
