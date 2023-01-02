@@ -1,16 +1,20 @@
-version: "2.1"
+version: "2.4"
+
+x-service-defaults:
+  &service-defaults
+  restart: always
+  networks:
+    - front
 
 services:
 
   php:
+    <<: *service-defaults
     image: ${IMAGE_PHP}
-    container_name: "${COMPOSE_PROJECT_NAME}_php"
+    container_name: "${COMPOSE_PROJECT_NAME}_web"
     volumes:
-      - ../${CODE_BASE_DIR}:/var/www/html:z
-      - ../drush/.drushrc.php:/home/www-data/.drushrc.php:z # for linux `z` for mac `cache`
-    restart: always
-    networks:
-      - front
+      - "../${CODE_BASE_DIR}:/var/www/html:z" # for linux `z` for mac `cache`
+      - "../drush/.drushrc.php:/home/www-data/.drushrc.php:z"  # for linux `z` for mac `cache`
 #    environment:
 #      REDIS_HOST: ${REDIS_HOST}
 #      REDIS_PORT: ${REDIS_PORT}
@@ -20,18 +24,26 @@ services:
 #    links:
 #      - redis:redis
 
-  nginx:
-    image: ${IMAGE_NGINX}
-    container_name: "${COMPOSE_PROJECT_NAME}_web"
-    depends_on:
-      - php
-    volumes_from:
-      - php
-    restart: always
-    networks:
-      - front
+#  nginx:
+#    <<: *service-defaults
+#    image: ${IMAGE_NGINX}
+#    container_name: "${COMPOSE_PROJECT_NAME}_web"
+#    depends_on:
+#      - php
+#    volumes_from:
+#      - php
+
+#  apache:
+#    <<: *service-defaults
+#    image: ${IMAGE_APACHE}
+#    container_name: "${COMPOSE_PROJECT_NAME}_web"
+#    depends_on:
+#      - php
+#    volumes_from:
+#      - php
 
 #  solr:
+#    <<: *service-defaults
 #    image: ${IMAGE_SOLR}
 #    container_name: "${COMPOSE_PROJECT_NAME}_solr"
 #    volumes:
@@ -41,16 +53,12 @@ services:
 #      - solr-precreate
 #      - ${COMPOSE_PROJECT_NAME}
 #      - /solr-conf
-#    networks:
-#    - front
 
 #  redis:
+#    <<: *service-defaults
 #    image: ${IMAGE_REDIS}
 #    container_name: "${COMPOSE_PROJECT_NAME}_redis"
-#    command: redis-server --requirepass ${REDIS_PASSWD}
-#    restart: always
-#    networks:
-#      - front
+#    command: redis-server --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWD}
 
 networks:
   front:
