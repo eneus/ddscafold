@@ -5,6 +5,7 @@
 *.directory
 *.DS_Store
 .env
+.env-e
 
 *xdebug.log
 
