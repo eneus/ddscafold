@@ -9,13 +9,23 @@ include scripts/makefile/*.mk
 	@:
 
 # Prepare enviroment variables from defaults
-$(shell false | cp -i \.env.default \.env 2>/dev/null)
-$(shell false | cp -i \.\/docker\/docker-compose\.override\.yml\.default \.\/docker\/docker-compose\.override\.yml 2>/dev/null)
+ifeq ($(OS),Windows_NT)
+	$(shell exit 1 | cp -i \.env.default \.env 2>/dev/null)
+	$(shell exit 1 | cp -i \.\/docker\/docker-compose\.override\.yml\.default \.\/docker\/docker-compose\.override\.yml 2>/dev/null)
+else
+    $(shell false | cp -i \.env.default \.env 2>/dev/null)
+	$(shell false | cp -i \.\/docker\/docker-compose\.override\.yml\.default \.\/docker\/docker-compose\.override\.yml 2>/dev/null)
+endif
 include .env
 
 # Get user/group id to manage permissions between host and containers
-LOCAL_UID := $(shell id -u)
-LOCAL_GID := $(shell id -g)
+ifeq ($(OS),Windows_NT)
+	LOCAL_UID := $( cmd [Environment]::UserName)
+	LOCAL_GID := 'Users'
+else
+	LOCAL_UID := $(shell id -u)
+	LOCAL_GID := $(shell id -g)
+endif
 
 # Evaluate recursively
 CUID ?= $(LOCAL_UID)
@@ -62,17 +72,13 @@ endif
 ifdef DB_MOUNT_DIR
 	$(shell [ ! -d $(DB_MOUNT_DIR) ] && mkdir -p $(DB_MOUNT_DIR) && chmod 777 $(DB_MOUNT_DIR))
 endif
-	make -s down
+	docker compose down
 	@echo "Build and run containers..."
 	docker compose up -d --remove-orphans
 ifneq ($(strip $(ADDITIONAL_PHP_PACKAGES)),)
 	$(call php-0, apk add --no-cache $(ADDITIONAL_PHP_PACKAGES))
 endif
-	# Set up timezone
-	# $(call php-0, cp /usr/share/zoneinfo/Europe/Vienna /etc/localtime)
-	# Install newrelic PHP extension if NEW_RELIC_LICENSE_KEY defined
-	# make -s newrelic
-	# $(call php-0, /bin/sh ./scripts/makefile/reload.sh)
+
 
 ## Install backend dependencies
 back:
@@ -134,8 +140,14 @@ exec0:
 down:
 	@echo "Removing network & containers for $(COMPOSE_PROJECT_NAME)"
 	@docker compose down -v --remove-orphans --rmi local
+
+ifeq ($(OS),Windows_NT)
+	@echo 'Stoping browser driver.'
+	@echo 'Containers removed on $(OS) ...'
+else
 	@if [ ! -z "$(shell docker ps -f 'name=$(COMPOSE_PROJECT_NAME)_chrome' --format '{{.Names}}')" ]; then \
 		echo 'Stoping browser driver.' && make -s browser_driver_stop; fi
+endif
 
 DIRS = $(CODE_BASE_DIR)/web/core $(CODE_BASE_DIR)/web/libraries $(CODE_BASE_DIR)/web/modules/contrib $(CODE_BASE_DIR)/web/profiles/contrib $(CODE_BASE_DIR)/web/sites $(CODE_BASE_DIR)/web/themes/contrib $(CODE_BASE_DIR)/vendor
 
