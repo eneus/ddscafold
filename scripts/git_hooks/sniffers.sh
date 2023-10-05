@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
 
-make sniffers
-exit $?
+#make sniffers
+#exit $?
 
