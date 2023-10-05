@@ -35,24 +35,40 @@ services:
 #    networks:
 #      - front
 
-  db:
-    build:
-      context: .
-      dockerfile: pg-Dockerfile
-    restart: always
-    container_name: "${COMPOSE_PROJECT_NAME}_postgres"
+  # postgres:
+  #   build:
+  #     context: .
+  #     dockerfile: pg-Dockerfile
+  #   restart: always
+  #   container_name: "${COMPOSE_PROJECT_NAME}_postgres"
+  #   volumes:
+  #     - ${DB_DATA_DIR}/${COMPOSE_PROJECT_NAME}:/var/lib/postgresql/data:cached
+  #   environment:
+  #     POSTGRES_DB: ${COMPOSE_PROJECT_NAME}
+  #     POSTGRES_USER: ${COMPOSE_PROJECT_NAME}
+  #     POSTGRES_PASSWORD: ${COMPOSE_PROJECT_NAME}
+  #   env_file:
+  #     - ../.env
+  #   networks:
+  #     - front
+  #   ports:
+  #     - "5432:5432"
+
+  mysql:
+    image: mariadb:11.0.3
+    container_name: "${COMPOSE_PROJECT_NAME}_mysql"
     volumes:
-      - ${DB_DATA_DIR}/${COMPOSE_PROJECT_NAME}:/var/lib/postgresql/data:cached
+      - ${DB_DATA_DIR}/${COMPOSE_PROJECT_NAME}_mysql:/var/lib/mysql:z
     environment:
-      POSTGRES_DB: ${COMPOSE_PROJECT_NAME}
-      POSTGRES_USER: ${COMPOSE_PROJECT_NAME}
-      POSTGRES_PASSWORD: ${COMPOSE_PROJECT_NAME}
-    env_file:
-      - ../.env
+      MYSQL_DATABASE: ${COMPOSE_PROJECT_NAME}
+      MYSQL_USER: ${COMPOSE_PROJECT_NAME}
+      MYSQL_PASSWORD: ${COMPOSE_PROJECT_NAME}
+      MYSQL_ROOT_PASSWORD: ${COMPOSE_PROJECT_NAME}
+    restart: always
     networks:
       - front
     ports:
-      - "5432:5432"
+      - "3306:3306"
 
   # mailhog:
   #   image: skilldlabs/mailhog

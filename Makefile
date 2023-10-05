@@ -13,7 +13,7 @@ ifeq ($(OS),Windows_NT)
 	$(shell exit 1 | cp -i \.env.default \.env 2>/dev/null)
 	$(shell exit 1 | cp -i \.\/docker\/docker-compose\.override\.yml\.default \.\/docker\/docker-compose\.override\.yml 2>/dev/null)
 else
-    $(shell false | cp -i \.env.default \.env 2>/dev/null)
+	$(shell false | cp -i \.env.default \.env 2>/dev/null)
 	$(shell false | cp -i \.\/docker\/docker-compose\.override\.yml\.default \.\/docker\/docker-compose\.override\.yml 2>/dev/null)
 endif
 include .env
