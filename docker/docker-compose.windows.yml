@@ -1,0 +1,142 @@
+version: "2.1"
+
+services:
+
+# Override base service.
+  php:
+    image: ${IMAGE_PHP}
+    container_name: "${COMPOSE_PROJECT_NAME}_php"
+    environment:
+      COMPOSER_MEMORY_LIMIT: "-1"
+      COMPOSER_HOME: /home/www-data/.composer
+    volumes:
+      - ../${CODE_BASE_DIR}:/var/www/html
+      - "./90-mail.ini:/etc/php8/conf.d/90-mail.ini"
+      - "../drush/.drushrc.php:/home/www-data/.drushrc.php"
+      # - "../${COMPOSER_HOME_CACHE}:/home/www-data/.composer" # for linux `z`
+    dns: 8.8.8.8
+    restart: always
+    networks:
+      - front
+    depends_on:
+      - db
+# Uncomment next line if you need PHP XDebug.
+    # command: php-fpm7 -F -d zend_extension=xdebug.so -d xdebug.discover_client_host=0 -d xdebug.client_host=192.168.65.2 -d xdebug.mode=debug -d xdebug.start_with_request=yes -d xdebug.log=/var/www/html/xdebug.log
+    # command: php-fpm81 -F -d zend_extension=xdebug.so -d xdebug.discover_client_host=0 -d xdebug.client_host=192.168.65.2 -d xdebug.mode=debug -d xdebug.start_with_request=yes -d xdebug.log=/var/www/html/xdebug.log
+    # command: php-fpm7 -F -d zend_extension=xdebug.so
+
+#  adminer:
+#    image: dockette/adminer:mysql-php7
+#    container_name: "${COMPOSE_PROJECT_NAME}_adminer"
+#    links:
+#      - mysql:mysql
+#    depends_on:
+#      - mysql
+#    networks:
+#      - front
+
+  # postgres:
+  #   build:
+  #     context: .
+  #     dockerfile: pg-Dockerfile
+  #   restart: always
+  #   container_name: "${COMPOSE_PROJECT_NAME}_postgres"
+  #   volumes:
+  #     - ${DB_DATA_DIR}/${COMPOSE_PROJECT_NAME}:/var/lib/postgresql/data:cached
+  #   environment:
+  #     POSTGRES_DB: ${COMPOSE_PROJECT_NAME}
+  #     POSTGRES_USER: ${COMPOSE_PROJECT_NAME}
+  #     POSTGRES_PASSWORD: ${COMPOSE_PROJECT_NAME}
+  #   env_file:
+  #     - ../.env
+  #   networks:
+  #     - front
+  #   ports:
+  #     - "5432:5432"
+
+  db:
+    image: mariadb:11.0.3
+    container_name: "${COMPOSE_PROJECT_NAME}_mysql"
+    volumes:
+      - ${DB_DATA_DIR}/${COMPOSE_PROJECT_NAME}_mysql:/var/lib/mysql:z
+    environment:
+      MYSQL_DATABASE: ${COMPOSE_PROJECT_NAME}
+      MYSQL_USER: ${COMPOSE_PROJECT_NAME}
+      MYSQL_PASSWORD: ${COMPOSE_PROJECT_NAME}
+      MYSQL_ROOT_PASSWORD: ${COMPOSE_PROJECT_NAME}
+    restart: always
+    networks:
+      - front
+    ports:
+      - "3306:3306"
+
+  # mailhog:
+  #   image: skilldlabs/mailhog
+  #   container_name: "${COMPOSE_PROJECT_NAME}_mail"
+  #   restart: always
+  #   networks:
+  #     - front
+  #   ports:
+  #     - "8025:8025"
+  #     - "1025:1025"
+    # labels:
+    #   - 'traefik.enable=true'
+    #   # Treafik 1.x
+    #   - 'traefik.backend=${MAIN_DOMAIN_NAME}_mail'
+    #   - 'traefik.frontend.rule=Host:mail-${MAIN_DOMAIN_NAME}'
+    #   - 'traefik.frontend.redirect.entryPoint=https'
+    #   - 'traefik.port=8025'
+    #   # Treafik 2.x
+    #   - 'traefik.http.routers.mailhog-${COMPOSE_PROJECT_NAME}.rule=Host(`mail-${MAIN_DOMAIN_NAME}`)'
+    #   - 'traefik.http.routers.mailhog-${COMPOSE_PROJECT_NAME}.tls.certresolver=dns'
+    #   - 'traefik.http.routers.mailhog-${COMPOSE_PROJECT_NAME}.tls=true'
+    #   - 'traefik.http.services.mailhog-${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8025'
+
+  nginx:
+    image: ${IMAGE_NGINX}
+    container_name: "${COMPOSE_PROJECT_NAME}_nginx"
+    depends_on:
+      - php
+    volumes_from:
+      - php
+    restart: always
+    networks:
+      - front
+# Uncomment for MacOS.
+    ports:
+      - "80:80"
+# Mount local folder with ssl keys.
+#     - ./nginx/ssl:/etc/nginx/ssl:Z
+    # labels:
+    #   - 'traefik.enable=true'
+    #   # Treafik 1.x
+    #   - 'traefik.backend=${MAIN_DOMAIN_NAME}_web'
+    #   - 'traefik.frontend.rule=Host:${MAIN_DOMAIN_NAME}'
+    #   - 'traefik.frontend.redirect.entryPoint=https'
+    #   - 'traefik.port=80'
+    #   # Treafik 2.x
+    #   - 'traefik.http.routers.nginx-${COMPOSE_PROJECT_NAME}.rule=Host(`${MAIN_DOMAIN_NAME}`)'
+    #   - 'traefik.http.routers.nginx-${COMPOSE_PROJECT_NAME}.tls.certresolver=dns'
+    #   - 'traefik.http.routers.nginx-${COMPOSE_PROJECT_NAME}.tls=true'
+
+#  solr:
+#    labels:
+#      - 'traefik.enable=true'
+#      # Treafik 1.x
+#      - 'traefik.backend=${MAIN_DOMAIN_NAME}_solr'
+#      - 'traefik.frontend.rule=Host:solr-${MAIN_DOMAIN_NAME}'
+#      - 'traefik.frontend.redirect.entryPoint=https'
+#      - 'traefik.port=8983'
+#      # Treafik 2.x
+#      - 'traefik.http.routers.solr-${COMPOSE_PROJECT_NAME}.rule=Host(`solr-${MAIN_DOMAIN_NAME}`)'
+#      - 'traefik.http.routers.solr-${COMPOSE_PROJECT_NAME}.tls.certresolver=dns'
+#      - 'traefik.http.routers.solr-${COMPOSE_PROJECT_NAME}.tls=true'
+#      - 'traefik.http.services.solr-${COMPOSE_PROJECT_NAME}.loadbalancer.server.port=8983'
+
+networks:
+  front:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: "${IPRANGE}"
